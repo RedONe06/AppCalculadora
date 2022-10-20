@@ -3,19 +3,26 @@ package br.ulbra.appcalculadora;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Button numeroZero, numeroUm, numeroDois, numeroTres,
             numeroQuatro, numeroCinco, numeroSeis, numeroSete,
             numeroOito, numeroNove, ponto, divisao, multiplicacao,
-            soma, subtracao, igual, botao_limpar;
+            soma, subtracao, igual, botao_limpar, porcentagem, potencia;
     private TextView txtExpressao, txtResultado;
     private ImageView backspace;
+    double primeiroNumero;
+    boolean percentageWasPressed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +46,9 @@ public class MainActivity extends AppCompatActivity {
         subtracao.setOnClickListener(this);
         multiplicacao.setOnClickListener(this);
         divisao.setOnClickListener(this);
+        potencia.setOnClickListener(this);
+        porcentagem.setOnClickListener(this);
+
 
         botao_limpar.setOnClickListener(
                 new View.OnClickListener() {
@@ -49,6 +59,19 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         );
+
+        porcentagem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (txtExpressao.getText().equals("")) {
+                    Toast.makeText(MainActivity.this, "Informe o valor xiru", Toast.LENGTH_SHORT).show();
+                } else {
+                    txtResultado.setText(String.valueOf(Math.sqrt(Double.parseDouble(txtExpressao.getText().toString()))));
+                    double x = Double.parseDouble(txtExpressao.getText().toString());
+                    txtExpressao.setText(porcentagem.getText() + "(" + x + ")");
+                }
+            }
+        });
 
         backspace.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,17 +95,27 @@ public class MainActivity extends AppCompatActivity {
                     Expression expressao = new ExpressionBuilder(txtExpressao.getText().toString()).build();
                     double resultado = expressao.evaluate();
                     long longResult = (long) resultado;
-                    if(resultado == (double) longResult){
-                        txtResultado.setText((CharSequence) String.valueOf(longResult) );
-                    }else{
-                        txtResultado.setText((CharSequence)String.valueOf(resultado));
+                    if (resultado == (double) longResult) {
+                        txtResultado.setText((CharSequence) String.valueOf(longResult));
+                        txtExpressao.append(" = " + longResult);
+                    } else {
+                        txtResultado.setText((CharSequence) String.valueOf(resultado));
+                        txtExpressao.append(" = " + resultado);
                     }
-                }catch (Exception e){
-
+                } catch (Exception e) {
                 }
-
             }
         });
+
+       /* porcentagem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                percentageWasPressed = true;
+                Log.i("a", "" + percentageWasPressed);
+                TextView expressao = findViewById(R.id.txt_expressao);
+                primeiroNumero = Double.parseDouble(expressao.getText().toString());
+            }
+        });*/
     }
 
     private void iniciarComponentes() {
@@ -102,6 +135,8 @@ public class MainActivity extends AppCompatActivity {
         subtracao = findViewById(R.id.subtracao);
         multiplicacao = findViewById(R.id.multiplicacao);
         divisao = findViewById(R.id.divisao);
+        potencia = findViewById(R.id.bt_potencia);
+        porcentagem = findViewById(R.id.bt_porcentagem);
         igual = findViewById(R.id.igual);
 
         botao_limpar = findViewById(R.id.bt_limpar);
@@ -125,7 +160,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.numero_zero:
@@ -173,7 +207,11 @@ public class MainActivity extends AppCompatActivity {
             case R.id.ponto:
                 acrescentarUmaExpressao(".", true);
                 break;
+            case R.id.bt_potencia:
+                acrescentarUmaExpressao("^", true);
+                break;
         }
     }
+
 
 }

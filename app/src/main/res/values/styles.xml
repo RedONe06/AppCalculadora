@@ -13,15 +13,14 @@
     </style>
 
     <style name="Operators_Button" parent="Container_Button">
-        <item name="android:backgroundTint">@color/blue_150</item>
+        <item name="android:background">@color/blue_150</item>
         <item name="android:textColor">@color/white</item>
         <item name="android:elevation">2dp</item>
     </style>
 
     <style name="Numbers_Button" parent="Container_Button">
-    <item name="android:backgroundTint">@drawable/botao_numero_selecionado</item>
+    <item name="android:background">@drawable/botao_numero_selecionado</item>
     <item name="android:textColor">@color/black</item>
-
 
     </style>
 

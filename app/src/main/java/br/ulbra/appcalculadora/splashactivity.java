@@ -17,6 +17,7 @@ public class splashactivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splashactivity);
         webView = findViewById(R.id.imgGif);
+
         Handler handler = new Handler();
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient());
@@ -31,8 +32,6 @@ public class splashactivity extends AppCompatActivity {
     }
 
     private void mostrarMainActivity() {
-
-
         Intent intent = new Intent(
                 splashactivity.this, MainActivity.class
         );
