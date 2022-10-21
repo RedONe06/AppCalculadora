@@ -13,6 +13,8 @@ import android.widget.Toast;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
+import java.text.DecimalFormat;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Button numeroZero, numeroUm, numeroDois, numeroTres,
@@ -21,8 +23,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             soma, subtracao, igual, botao_limpar, porcentagem, potencia;
     private TextView txtExpressao, txtResultado;
     private ImageView backspace;
-    double primeiroNumero;
-    boolean percentageWasPressed = false;
+    String operacaoAtual;
+    String numeroAtual = "";
+    boolean equalWasPressed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,7 +34,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         getSupportActionBar().hide();
         iniciarComponentes();
+
         numeroZero.setOnClickListener(this);
+        numeroUm.setOnClickListener(this);
         numeroUm.setOnClickListener(this);
         numeroDois.setOnClickListener(this);
         numeroTres.setOnClickListener(this);
@@ -47,8 +52,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         multiplicacao.setOnClickListener(this);
         divisao.setOnClickListener(this);
         potencia.setOnClickListener(this);
-        porcentagem.setOnClickListener(this);
-
 
         botao_limpar.setOnClickListener(
                 new View.OnClickListener() {
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     public void onClick(View v) {
                         txtExpressao.setText("");
                         txtResultado.setText("");
+                        numeroAtual = "";
                     }
                 }
         );
@@ -66,9 +70,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (txtExpressao.getText().equals("")) {
                     Toast.makeText(MainActivity.this, "Informe o valor xiru", Toast.LENGTH_SHORT).show();
                 } else {
-                    txtResultado.setText(String.valueOf(Math.sqrt(Double.parseDouble(txtExpressao.getText().toString()))));
-                    double x = Double.parseDouble(txtExpressao.getText().toString());
-                    txtExpressao.setText(porcentagem.getText() + "(" + x + ")");
+                    DecimalFormat f = new DecimalFormat("0.00");
+
+                    String regex = operacaoAtual + numeroAtual;
+
+                    double numeroAnterior = Double.parseDouble(String.valueOf(txtExpressao.getText().toString().replace(regex, "")));
+                    double numeroDecimal =  (Double.parseDouble(numeroAtual) / 100.0) * numeroAnterior;
+                    String contaCompleta = numeroAnterior + " " + operacaoAtual + " " + numeroDecimal;
+
+                    try {
+                        Expression expressao = new ExpressionBuilder(contaCompleta).build();
+                        double resultado = expressao.evaluate();
+                        long longResult = (long) resultado;
+                        if (resultado == (double) longResult) {
+                            txtResultado.setText((CharSequence) String.valueOf(longResult));
+                            txtExpressao.setText(String.valueOf(numeroAnterior) + " " + operacaoAtual + " " + String.valueOf(f.format(numeroDecimal)) + " =");
+                            equalWasPressed = true;
+                        } else {
+                            txtResultado.setText((CharSequence) String.valueOf(resultado));
+                            txtExpressao.setText(String.valueOf(numeroAnterior) + " " + operacaoAtual + " " + String.valueOf(f.format(numeroDecimal)) + " =");
+                            equalWasPressed = true;
+                        }
+                    } catch (Exception e) {
+                    }
                 }
             }
         });
@@ -97,25 +121,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     long longResult = (long) resultado;
                     if (resultado == (double) longResult) {
                         txtResultado.setText((CharSequence) String.valueOf(longResult));
-                        txtExpressao.append(" = " + longResult);
+                        txtExpressao.append(" = ");
+                        equalWasPressed = true;
                     } else {
                         txtResultado.setText((CharSequence) String.valueOf(resultado));
-                        txtExpressao.append(" = " + resultado);
+                        txtExpressao.append(" = ");
+                        equalWasPressed = true;
                     }
                 } catch (Exception e) {
                 }
             }
         });
-
-       /* porcentagem.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                percentageWasPressed = true;
-                Log.i("a", "" + percentageWasPressed);
-                TextView expressao = findViewById(R.id.txt_expressao);
-                primeiroNumero = Double.parseDouble(expressao.getText().toString());
-            }
-        });*/
     }
 
     private void iniciarComponentes() {
@@ -138,6 +154,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         potencia = findViewById(R.id.bt_potencia);
         porcentagem = findViewById(R.id.bt_porcentagem);
         igual = findViewById(R.id.igual);
+        potencia = findViewById(R.id.bt_potencia);
 
         botao_limpar = findViewById(R.id.bt_limpar);
         txtExpressao = findViewById(R.id.txt_expressao);
@@ -145,73 +162,90 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         backspace = findViewById(R.id.backspace);
     }
 
-    public void acrescentarUmaExpressao(String string, boolean limpar_dados) {
-        if (txtResultado.getText().equals("")) {
-            txtExpressao.setText(" ");
+    public void acrescentarUmaExpressao(String string, boolean limpar_dados, boolean operacao) {
+        if(!operacao){
+            numeroAtual += string;
         }
-        if (limpar_dados) {
-            txtResultado.setText(" ");
+
+        if (limpar_dados && !operacao) {
             txtExpressao.append(string);
-        } else {
+            txtResultado.setText(numeroAtual);
+        } else if (!operacao){
             txtExpressao.append(txtResultado.getText());
             txtExpressao.append(string);
             txtResultado.setText(" ");
+        } else {
+            txtExpressao.append(string);
+            numeroAtual = "";
         }
     }
-
 
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.numero_zero:
-                acrescentarUmaExpressao("0", true);
+                acrescentarUmaExpressao("0", true, false);
                 break;
             case R.id.numero_um:
-                acrescentarUmaExpressao("1", true);
+                acrescentarUmaExpressao("1", true, false);
                 break;
             case R.id.numero_dois:
-                acrescentarUmaExpressao("2", true);
+                acrescentarUmaExpressao("2", true, false);
                 break;
             case R.id.numero_tres:
-                acrescentarUmaExpressao("3", true);
+                acrescentarUmaExpressao("3", true, false);
                 break;
             case R.id.numero_quatro:
-                acrescentarUmaExpressao("4", true);
+                acrescentarUmaExpressao("4", true, false);
                 break;
             case R.id.numero_cinco:
-                acrescentarUmaExpressao("5", true);
+                acrescentarUmaExpressao("5", true, false);
                 break;
             case R.id.numero_seis:
-                acrescentarUmaExpressao("6", true);
+                acrescentarUmaExpressao("6", true, false);
                 break;
             case R.id.numero_sete:
-                acrescentarUmaExpressao("7", true);
+                acrescentarUmaExpressao("7", true, false);
                 break;
             case R.id.numero_oito:
-                acrescentarUmaExpressao("8", true);
+                acrescentarUmaExpressao("8", true, false);
                 break;
             case R.id.numero_nove:
-                acrescentarUmaExpressao("9", true);
+                acrescentarUmaExpressao("9", true, false);
                 break;
             case R.id.adicao:
-                acrescentarUmaExpressao("+", true);
+                operacaoAtual = "+";
+                prepararProximaOperacao();
+                acrescentarUmaExpressao("+", true, true);
                 break;
             case R.id.subtracao:
-                acrescentarUmaExpressao("-", true);
+                operacaoAtual = "-";
+                prepararProximaOperacao();
+                acrescentarUmaExpressao("-", true, true);
                 break;
             case R.id.multiplicacao:
-                acrescentarUmaExpressao("*", true);
+                operacaoAtual = "*";
+                prepararProximaOperacao();
+                acrescentarUmaExpressao("*", true, true);
                 break;
             case R.id.divisao:
-                acrescentarUmaExpressao("/", true);
+                operacaoAtual = "/";
+                prepararProximaOperacao();
+                acrescentarUmaExpressao("/", true, true);
                 break;
             case R.id.ponto:
-                acrescentarUmaExpressao(".", true);
+                acrescentarUmaExpressao(".", true, false);
                 break;
             case R.id.bt_potencia:
-                acrescentarUmaExpressao("^", true);
+                operacaoAtual = "^";
+                prepararProximaOperacao();
+                acrescentarUmaExpressao("^", true, true);
                 break;
         }
     }
 
-
+    public void prepararProximaOperacao(){
+        if(equalWasPressed) {
+            txtExpressao.setText(txtResultado.getText().toString());
+        }
+    }
 }
